@@ -1,0 +1,18 @@
+{
+	"author": "Max Geissler",
+	"name": "htmlcat",
+	"description": "htmlcat concatenates HTML files.",
+	"homepage": "https://github.com/fluidblue/htmlcat",
+	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/fluidblue/htmlcat"
+	},
+	"bin": "./htmlcat.js",
+	"dependencies":
+	{
+		"optimist": "0.6.x",
+		"colors": "0.6.x",
+		"async-replace": "0.0.x"
+    }
+}
