@@ -29,8 +29,9 @@ var reIncludePattern = /\{(\s*)%(\s*)include(\s+)(.*)(\s*)%(\s*)\}/gi;
 // Regular expression matching the filename in an include pattern
 var reFilename = /include(\s+)(.*)(\s*)%/i;
 
-// Print additional information
+// Global options
 var verboseMode = false;
+var colorMode = false;
 
 /* End of global variables section */
 
@@ -43,7 +44,7 @@ function processFile(file, parentFile)
 	}
 	catch (err)
 	{
-		console.log(('Error: Cannot read file ' + file + ' (included in ' + parentFile + ')').red);
+		console.log(colorize('Error: Cannot read file ' + file + ' (included in ' + parentFile + ')', 'red'));
 
 		if (verboseMode)
 			console.log(err);
@@ -100,7 +101,7 @@ function saveFile(file, data)
 			process.exit(1);
 		}
 
-		console.log('Finished.'.green);
+		console.log(colorize('Finished.', 'green'));
 	});
 }
 
@@ -115,11 +116,29 @@ function getArgv()
 		.describe('o', 'Output file')
 		.default('o', 'out.htm')
 
+		.alias('c', 'color')
+		.describe('c', 'Colored output')
+		.boolean('c')
+
 		.alias('v', 'verbose')
 		.describe('v', 'Verbose mode')
 		.boolean('v')
 
 		.argv;
+}
+
+function colorize(string, color)
+{
+	if (!colorMode)
+		return string;
+
+	switch (color)
+	{
+		case 'red': return string.red;
+		case 'green': return string.green;
+		case 'blue': return string.blue;
+		default: return string;
+	}
 }
 
 // Main entry
@@ -128,20 +147,23 @@ function main()
 	// Get command line options
 	var argv = getArgv();
 
+	// Set global options
+	verboseMode = argv.verbose;
+	colorMode = argv.color;
+
 	// Greet the user
-	console.log('Welcome to htmlcat.'.blue);
+	console.log(colorize('Welcome to htmlcat.', 'blue'));
 
 	// Get input and output filenames
 	var inFile = argv.in;
 	var outFile = argv.out;
-	verboseMode = argv.verbose;
 
-	if (outFile == undefined || outFile === '')
+	if (outFile === '')
 		outFile = 'out.htm';
 
 	if (path.resolve(inFile) === path.resolve(outFile))
 	{
-		console.log('Error: Output file cannot be the same as the input file.'.red);
+		console.log(colorize('Error: Output file cannot be the same as the input file.', 'red'));
 		process.exit(1);
 	}
 
