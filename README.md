@@ -19,6 +19,17 @@ Files are recursively parsed, this means you can include files, that include mor
 Note: Only .htm and .html are parsed. Other files can only be included.
 
 
+## Install
+
+Install htmlcat with the node package manager:
+
+    npm install -g htmlcat
+
+After that, you can use it from the commandline:
+
+    htmlcat --in index.htm --out out.htm
+
+
 ## Example
 
 File index.htm:
