@@ -12,7 +12,6 @@
 	"dependencies":
 	{
 		"optimist": "0.6.x",
-		"colors": "0.6.x",
-		"async-replace": "0.0.x"
+		"colors": "0.6.x"
     }
 }

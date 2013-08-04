@@ -16,79 +16,61 @@
  */
 
 var fs = require('fs');
-var argv = require('optimist').argv;
 var colors = require('colors');
-var asyncReplace = require('async-replace');
 var path = require('path');
+var optimist = require('optimist');
 
-// Recursively process files
-function processFile(file, callback)
+/* Global variables section */
+
+// Regular expression matching the include pattern:
+// {% include path/to/filename.ext %}
+var reIncludePattern = /\{(\s*)%(\s*)include(\s+)(.*)(\s*)%(\s*)\}/gi;
+
+// Regular expression matching the filename in an include pattern
+var reFilename = /include(\s+)(.*)(\s*)%/i;
+
+// Print additional information
+var verboseMode = false;
+
+/* End of global variables section */
+
+// Recursively process file
+function processFile(file, parentFile)
 {
-	fs.readFile(file, 'utf8', function (err, data)
+	try
 	{
-		if (err)
-		{
-			console.log(("Error: Cannot read file " + file).red);
+		data = fs.readFileSync(file, 'utf8');
+	}
+	catch (err)
+	{
+		console.log(('Error: Cannot read file ' + file + ' (included in ' + parentFile + ')').red);
+
+		if (verboseMode)
 			console.log(err);
-			process.exit(1);
-		}
 
-		// Regular expression matching the include pattern:
-		// {% include path/to/filename.ext %}
-		var reIncludePattern = /\{(\s*)%(\s*)include(\s+)(.*)(\s*)%(\s*)\}/gi;
+		process.exit(1);
+	}
 
-		var fnReplace = function (includePattern, p1, p2, p3, offset, string, done)
-		{
-			// Get filename
-			var reFilename = /include(\s+)(.*)(\s*)%/i;
-			nestedFile = includePattern.match(reFilename)[2];
+	var fnReplace = function (includePattern)
+	{
+		// Get filename
+		nestedFile = includePattern.match(reFilename)[2];
 
-			// Remove whitespaces after filename
-			nestedFile = nestedFile.trim();
+		// Remove whitespaces after filename
+		nestedFile = nestedFile.trim();
 
-			// Apply path
-			nestedFile = path.resolve(path.dirname(file) + "/" + nestedFile);
-			
-			console.log("Info: Found " + includePattern + " => Processing " + nestedFile);
+		// Apply path
+		nestedFile = path.resolve(path.dirname(file) + '/' + nestedFile);
+		
+		// Log
+		if (verboseMode)
+			console.log('Info: Found ' + includePattern + ' => Processing ' + nestedFile);
 
-			// Recursively process file
-			processFile(nestedFile, function (data)
-			{
-				// Pass processed data
+		// Recursively process file
+		return processFile(nestedFile, file);
+	}
 
-				// TODO: Not working. Bug in async-replace module?
-				//done(null, data);
-			});
-		}
-
-		asyncReplace(data, reIncludePattern, fnReplace, function (err, result)
-		{
-			// TODO: Check err
-
-			// Pass processed data
-			callback(result);
-		});
-
-		// data = data.replace(reIncludePattern, function(includePattern) 
-		// {
-		// 	// Get filename
-		// 	var reFilename = /include(\s+)(.*)(\s*)%/i;
-		// 	filename = includePattern.match(reFilename)[2];
-
-		// 	// Remove whitespaces after filename
-		// 	filename = filename.trim();
-
-		// 	console.log(includePattern);
-		// 	console.log(filename);
-
-		// 	processFile(filename, function (data)
-		// 	{
-		// 		asd
-		// 	});
-
-		// 	return "X";
-		// });
-	});
+	return data.replace(reIncludePattern, fnReplace);
 }
 
 // Save data to file
@@ -98,37 +80,62 @@ function saveFile(file, data)
 	{
 		if (err)
 		{
-			console.log(("Error: Cannot save output file " + file).red);
+			console.log(('Error: Cannot save output file ' + file).red);
 			console.log(err);
 			process.exit(1);
 		}
 
-		console.log('Finished.');
+		console.log('Finished.'.green);
 	});
 }
 
-// Greet the user
-console.log("Welcome to htmlcat.");
-
-// Get input and output filenames
-var inFile = argv._[0];
-var outFile = argv.out;
-//var verboseMode = argv.verbose;
-
-if (outFile == undefined || outFile === "")
-	outFile = "out.htm";
-
-if (inFile === outFile)
+function getArgv()
 {
-	console.log("Error: Output file cannot be the same as the input file.".red);
-	process.exit(1);
+	return optimist.usage('Concatenate HTML files.\nUsage: $0')
+		.demand('i')
+		.alias('i', 'in')
+		.describe('i', 'Input file')
+
+		.alias('o', 'out')
+		.describe('o', 'Output file')
+		.default('o', 'out.htm')
+
+		.alias('v', 'verbose')
+		.describe('v', 'Verbose mode')
+		.boolean('v')
+		
+
+		.argv;
 }
 
-console.log("Input file: " + inFile + "\nOutput file: " + outFile);
-
-// Process files
-processFile(inFile, function(data)
+// Main entry
+function main()
 {
-	// Save content to output file
-	saveFile(outFile, data);
-});
+	// Get command line options
+	var argv = getArgv();
+
+	// Greet the user
+	console.log('Welcome to htmlcat.'.blue);
+
+	// Get input and output filenames
+	var inFile = argv.in;
+	var outFile = argv.out;
+	verboseMode = argv.verbose;
+
+	if (outFile == undefined || outFile === '')
+		outFile = 'out.htm';
+
+	if (path.resolve(inFile) === path.resolve(outFile))
+	{
+		console.log('Error: Output file cannot be the same as the input file.'.red);
+		process.exit(1);
+	}
+
+	console.log('Input file: ' + inFile + '\nOutput file: ' + outFile);
+
+	// Process files and save content to output file
+	saveFile(outFile, processFile(inFile));
+}
+
+// Start
+main();
