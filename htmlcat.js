@@ -51,6 +51,21 @@ function processFile(file, parentFile)
 		process.exit(1);
 	}
 
+	// Check extension
+	switch (path.extname(file))
+	{
+		// Recursively process these files
+		case ".htm":
+		case ".html":
+		case ".txt":
+			break;
+
+		// Only read content for these files
+		default:
+			return data;
+	}
+
+	// Replace function
 	var fnReplace = function (includePattern)
 	{
 		// Get filename
@@ -103,7 +118,6 @@ function getArgv()
 		.alias('v', 'verbose')
 		.describe('v', 'Verbose mode')
 		.boolean('v')
-		
 
 		.argv;
 }
