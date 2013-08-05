@@ -16,7 +16,7 @@ You can use this include pattern anywhere, even inside tag attributes:
 As seen above you are not limited to HTML files, but you can include any text file with any extension.
 Files are recursively parsed, this means you can include files, that include more files.
 
-Note: Only .htm and .html are parsed. Other files can only be included.
+Note: Only .htm, .html and .txt files are parsed. Other files can only be included.
 
 
 ## Install
