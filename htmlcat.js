@@ -97,11 +97,15 @@ function saveFile(file, data)
 		if (err)
 		{
 			console.log(('Error: Cannot save output file ' + file).red);
-			console.log(err);
+
+			if (verboseMode)
+				console.log(err);
+			
 			process.exit(1);
 		}
 
-		console.log(colorize('Finished.', 'green'));
+		if (verboseMode)
+			console.log(colorize('Finished.', 'green'));
 	});
 }
 
@@ -152,7 +156,8 @@ function main()
 	colorMode = argv.color;
 
 	// Greet the user
-	console.log(colorize('Welcome to htmlcat.', 'blue'));
+	if (verboseMode)
+		console.log(colorize('Welcome to htmlcat.', 'blue'));
 
 	// Get input and output filenames
 	var inFile = argv.in;
@@ -167,7 +172,8 @@ function main()
 		process.exit(1);
 	}
 
-	console.log('Input file: ' + inFile + '\nOutput file: ' + outFile);
+	if (verboseMode)
+		console.log('Input file: ' + inFile + '\nOutput file: ' + outFile);
 
 	// Process files and save content to output file
 	saveFile(outFile, processFile(inFile));
