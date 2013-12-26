@@ -38,6 +38,9 @@ var colorMode = false;
 // Recursively process file
 function processFile(file, parentFile)
 {
+	if (fs.lstatSync(file).isDirectory())
+		file = path.resolve(file + '/index.htm');
+
 	try
 	{
 		data = fs.readFileSync(file, 'utf8');

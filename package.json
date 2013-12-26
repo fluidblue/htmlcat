@@ -3,7 +3,7 @@
 	"name": "htmlcat",
 	"description": "htmlcat concatenates HTML files.",
 	"homepage": "https://github.com/fluidblue/htmlcat",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/fluidblue/htmlcat"
